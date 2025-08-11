@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "title": "Remera de Algodón Básico",
+    "description": "Remera de algodón 100% orgánico, ideal para uso diario. Disponible en varios colores.",
+    "code": "RMB001",
+    "price": 78.999,
+    "status": true,
+    "stock": 40,
+    "category": "Ropa",
+    "thumbnails": [
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMZza7MJKvACgid1Mj-aZiEjNBCR83B0RgpQ&s"
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Jeans Clásicos",
+    "description": "Jeans de corte recto con diseño clásico. Confeccionados en denim de alta calidad.",
+    "code": "JNS002",
+    "price": 139.999,
+    "status": true,
+    "stock": 25,
+    "category": "Ropa",
+    "thumbnails": [
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqn-rkry1o5LH3GUYC07rzWTeUPsZDiY64OQ&s"
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Zapatillas Deportivas",
+    "description": "Zapatillas ligeras y transpirables para running o uso casual. Suela de goma antideslizante.",
+    "code": "ZAP003",
+    "price": 165.999,
+    "status": true,
+    "stock": 10,
+    "category": "Calzado",
+    "thumbnails": [
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCZI6V651Tylk_PVt7Kc9gJbfnakbA-EebKg&s"
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Sudadera con Capucha",
+    "description": "Sudadera cómoda con capucha ajustable y bolsillo canguro. Ideal para climas frescos.",
+    "code": "SUD004",
+    "price": 129.999,
+    "status": true,
+    "stock": 35,
+    "category": "Ropa",
+    "thumbnails": [
+      "https://m.media-amazon.com/images/I/71CZQ2SyNjL._AC_SL1500_.jpg"
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Gorra de Béisbol",
+    "description": "Gorra ajustable de estilo clásico para protegerte del sol.",
+    "code": "GOR005",
+    "price": 72.999,
+    "status": true,
+    "stock": 15,
+    "category": "Accesorios",
+    "thumbnails": [
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdj4Epwun5JdM1ZfOUObdpndnBggLTbX3iYA&s"
+    ]
+  }
+]
