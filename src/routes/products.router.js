@@ -1,68 +1,88 @@
 const { Router } = require("express");
-
 const ProductManager = require("../dao/ProductManager");
 
 const router = Router();
-
 const productManager = new ProductManager("./src/data/products.json");
 
 router.get("/", async (req, res) => {
-  const products = await productManager.getProducts();
+  try {
+    const products = await productManager.getProducts();
+    const limit = req.query.limit;
 
-  const limit = req.query.limit;
-
-  if (limit) {
-    return res.json(products.slice(0, limit));
+    if (limit) {
+      return res.json(products.slice(0, limit));
+    }
+    res.json(products);
+  } catch (error) {
+    console.error("Error al obtener productos:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
-
-  res.json(products);
 });
 
 router.get("/:pid", async (req, res) => {
-  const product = await productManager.getProductById(req.params.pid);
-
-  if (product) {
-    res.json(product);
-  } else {
-    res.status(404).json({ message: "no se ha encontrado ningun producto." });
+  try {
+    const product = await productManager.getProductById(req.params.pid);
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ message: "Producto no encontrado." });
+    }
+  } catch (error) {
+    console.error("Error al obtener producto por ID:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
 router.post("/", async (req, res) => {
-  const newProduct = await productManager.addProduct(req.body);
+  try {
+    const newProduct = await productManager.addProduct(req.body);
 
-  res.status(201).json(newProduct);
+    // Emitir el evento a todos los clientes conectados
+    const products = await productManager.getProducts();
+    req.io.emit("productsUpdated", products);
+
+    res.status(201).json(newProduct);
+  } catch (error) {
+    // ...
+  }
 });
 
 router.put("/:pid", async (req, res) => {
-  const { pid } = req.params;
-
-  const updatedFields = req.body;
-
-  if (updatedFields.id) {
-    delete updatedFields.id;
-  }
-
-  const updatedProduct = await productManager.updateProduct(
-    pid,
-
-    updatedFields
-  );
-
-  if (updatedProduct) {
-    res.json(updatedProduct);
-  } else {
-    res.status(404).json({ message: "no se ha encontrado ningun producto" });
+  try {
+    const { pid } = req.params;
+    const updatedFields = req.body;
+    if (updatedFields.id) {
+      delete updatedFields.id;
+    }
+    const updatedProduct = await productManager.updateProduct(
+      pid,
+      updatedFields
+    );
+    if (updatedProduct) {
+      res.json(updatedProduct);
+    } else {
+      res.status(404).json({ message: "Producto no encontrado." });
+    }
+  } catch (error) {
+    console.error("Error al actualizar producto:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
 router.delete("/:pid", async (req, res) => {
-  const result = await productManager.deleteProduct(req.params.pid);
+  try {
+    const result = await productManager.deleteProduct(req.params.pid);
+    if (result) {
+      // Emitir el evento a todos los clientes conectados
+      const products = await productManager.getProducts();
+      req.io.emit("productsUpdated", products);
 
-  if (result) {
-    res.status(204).send();
-  } else {
-    res.status(404).json({ message: "no se ha encontrado ningun producto" });
+      res.status(204).send();
+    } else {
+      res.status(404).json({ message: "Producto no encontrado." });
+    }
+  } catch (error) {
+    // ...
   }
 });
 

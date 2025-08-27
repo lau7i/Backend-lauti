@@ -48,7 +48,6 @@ class ProductManager {
     const updatedProduct = {
       ...products[productIndex],
       ...updatedFields,
-      id: products[productIndex].id,
     };
     products[productIndex] = updatedProduct;
     await fs.promises.writeFile(
