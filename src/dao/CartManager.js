@@ -1,67 +1,61 @@
-const fs = require("fs");
-const ProductManager = require("./ProductManager");
+const Cart = require("../models/cart.model");
 
 class CartManager {
-  constructor(filePath) {
-    this.filePath = filePath;
-    this.productManager = new ProductManager("./src/data/products.json");
-  }
-
-  async getCarts() {
-    if (fs.existsSync(this.filePath)) {
-      const data = await fs.promises.readFile(this.filePath, "utf-8");
-      if (data) {
-        return JSON.parse(data);
-      }
-    }
-    return [];
-  }
   async getCartById(id) {
-    const carts = await this.getCarts();
-    const cart = carts.find((c) => c.id === parseInt(id));
-    return cart;
+    return await Cart.findById(id).populate("products.product").lean();
   }
 
   async createCart() {
-    const carts = await this.getCarts();
-    const newCart = {
-      id: carts.length > 0 ? Math.max(...carts.map((c) => c.id)) + 1 : 1,
-      products: [],
-    };
-    carts.push(newCart);
-    await fs.promises.writeFile(this.filePath, JSON.stringify(carts, null, 2));
-    return newCart;
+    return await Cart.create({ products: [] });
   }
 
   async addProductToCart(cartId, productId) {
-    const carts = await this.getCarts();
-    const cartIndex = carts.findIndex((c) => c.id === parseInt(cartId));
+    const cart = await Cart.findById(cartId);
+    if (!cart) throw new Error("Carrito no encontrado");
 
-    if (cartIndex === -1) {
-      return {
-        success: false,
-        message: "no se han encontrado productos en el carrito.",
-      };
-    }
-
-    const product = await this.productManager.getProductById(productId);
-    if (!product) {
-      return { success: false, message: "no se ha encontrado ningun producto" };
-    }
-
-    const cart = carts[cartIndex];
-    const existingProductIndex = cart.products.findIndex(
-      (p) => p.product === parseInt(productId)
+    const productIndex = cart.products.findIndex((p) =>
+      p.product.equals(productId)
     );
 
-    if (existingProductIndex !== -1) {
-      cart.products[existingProductIndex].quantity += 1;
+    if (productIndex !== -1) {
+      cart.products[productIndex].quantity += 1;
     } else {
-      cart.products.push({ product: parseInt(productId), quantity: 1 });
+      cart.products.push({ product: productId, quantity: 1 });
     }
+    await cart.save();
+    return cart;
+  }
 
-    await fs.promises.writeFile(this.filePath, JSON.stringify(carts, null, 2));
-    return { success: true, cart: cart };
+  async deleteProductFromCart(cartId, productId) {
+    return await Cart.findByIdAndUpdate(
+      cartId,
+      { $pull: { products: { product: productId } } },
+      { new: true }
+    );
+  }
+
+  async updateCart(cartId, products) {
+    return await Cart.findByIdAndUpdate(
+      cartId,
+      { products: products },
+      { new: true }
+    );
+  }
+
+  async updateProductQuantity(cartId, productId, quantity) {
+    return await Cart.findOneAndUpdate(
+      { _id: cartId, "products.product": productId },
+      { $set: { "products.$.quantity": quantity } },
+      { new: true }
+    );
+  }
+
+  async clearCart(cartId) {
+    return await Cart.findByIdAndUpdate(
+      cartId,
+      { products: [] },
+      { new: true }
+    );
   }
 }
 

@@ -1,76 +1,48 @@
-const fs = require("fs");
+const Product = require("../models/product.model");
 
 class ProductManager {
-  constructor(filePath) {
-    this.filePath = filePath;
-  }
-
-  async getProducts() {
-    if (fs.existsSync(this.filePath)) {
-      const data = await fs.promises.readFile(this.filePath, "utf-8");
-      return JSON.parse(data);
+  async getProducts(options) {
+    const { limit = 10, page = 1, sort, query } = options;
+    const filter = {};
+    if (query) {
+      filter.$or = [
+        { category: query },
+        {
+          status:
+            query === "true" ? true : query === "false" ? false : undefined,
+        },
+      ];
     }
-    return [];
+
+    const sortOptions = {};
+    if (sort) {
+      sortOptions.price = sort === "asc" ? 1 : -1;
+    }
+
+    const paginatedProducts = await Product.paginate(filter, {
+      limit: parseInt(limit),
+      page: parseInt(page),
+      sort: sortOptions,
+      lean: true,
+    });
+
+    return paginatedProducts;
   }
 
   async getProductById(id) {
-    const products = await this.getProducts();
-    const product = products.find((p) => p.id === parseInt(id));
-    return product;
+    return await Product.findById(id);
   }
 
-  async addProduct(product) {
-    const products = await this.getProducts();
-    const newId =
-      products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1;
-    const newProduct = {
-      id: newId,
-      ...product,
-      status: true,
-      thumbnails: product.thumbnails || [],
-    };
-    products.push(newProduct);
-    await fs.promises.writeFile(
-      this.filePath,
-      JSON.stringify(products, null, 2)
-    );
-    return newProduct;
+  async addProduct(productData) {
+    return await Product.create(productData);
   }
 
   async updateProduct(id, updatedFields) {
-    const products = await this.getProducts();
-    const productIndex = products.findIndex((p) => p.id === parseInt(id));
-
-    if (productIndex === -1) {
-      return null;
-    }
-
-    const updatedProduct = {
-      ...products[productIndex],
-      ...updatedFields,
-    };
-    products[productIndex] = updatedProduct;
-    await fs.promises.writeFile(
-      this.filePath,
-      JSON.stringify(products, null, 2)
-    );
-    return updatedProduct;
+    return await Product.findByIdAndUpdate(id, updatedFields, { new: true });
   }
 
   async deleteProduct(id) {
-    const products = await this.getProducts();
-    const initialLength = products.length;
-    const newProducts = products.filter((p) => p.id !== parseInt(id));
-
-    if (newProducts.length === initialLength) {
-      return false;
-    }
-
-    await fs.promises.writeFile(
-      this.filePath,
-      JSON.stringify(newProducts, null, 2)
-    );
-    return true;
+    return await Product.findByIdAndDelete(id);
   }
 }
 
