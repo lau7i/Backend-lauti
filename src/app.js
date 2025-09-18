@@ -6,11 +6,14 @@ const mongoose = require("mongoose");
 const productsRouter = require("./routes/products.router");
 const cartsRouter = require("./routes/carts.router");
 const viewsRouter = require("./routes/views.router");
+const ProductManager = require("./dao/ProductManager");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const PORT = 8080;
+
+const productManager = new ProductManager();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -31,6 +34,26 @@ app.use("/", viewsRouter);
 
 io.on("connection", (socket) => {
   console.log("Nuevo cliente conectado");
+
+  socket.on("addProduct", async (product) => {
+    try {
+      await productManager.addProduct(product);
+      const products = await productManager.getProducts({});
+      io.emit("productsUpdated", products.docs);
+    } catch (error) {
+      console.error("Error al agregar producto por socket:", error);
+    }
+  });
+
+  socket.on("deleteProduct", async (productId) => {
+    try {
+      await productManager.deleteProduct(productId);
+      const products = await productManager.getProducts({});
+      io.emit("productsUpdated", products.docs);
+    } catch (error) {
+      console.error("Error al eliminar producto por socket:", error);
+    }
+  });
 });
 
 mongoose

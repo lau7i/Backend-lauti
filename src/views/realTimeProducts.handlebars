@@ -1,9 +1,19 @@
 <h1>Productos en Tiempo Real</h1>
 
 <form id="productForm">
+   
   <input type="text" id="title" placeholder="Título" required />
+   
   <input type="text" id="description" placeholder="Descripción" required />
-  <input type="number" id="price" placeholder="Precio" required />
+   
+  <input type="text" id="code" placeholder="Código Único" required />
+   
+  <input type="number" id="price" placeholder="Precio" required step="0.01" />
+   
+  <input type="number" id="stock" placeholder="Stock" required />
+   
+  <input type="text" id="category" placeholder="Categoría" required />
+   
   <button type="submit">Agregar Producto</button>
 </form>
 

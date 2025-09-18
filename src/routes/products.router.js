@@ -65,4 +65,48 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/:pid", async (req, res) => {
+  try {
+    const product = await productManager.getProductById(req.params.pid);
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ error: "Producto no encontrado" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+router.put("/:pid", async (req, res) => {
+  try {
+    const updatedProduct = await productManager.updateProduct(
+      req.params.pid,
+      req.body
+    );
+    if (updatedProduct) {
+      res.json(updatedProduct);
+    } else {
+      res.status(404).json({ error: "Producto no encontrado" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error al actualizar el producto" });
+  }
+});
+
+router.delete("/:pid", async (req, res) => {
+  try {
+    const deletedProduct = await productManager.deleteProduct(req.params.pid);
+    if (deletedProduct) {
+      const products = await productManager.getProducts({});
+      req.io.emit("productsUpdated", products.docs);
+      res.json({ message: "Producto eliminado" });
+    } else {
+      res.status(404).json({ error: "Producto no encontrado" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error al eliminar el producto" });
+  }
+});
+
 module.exports = router;
