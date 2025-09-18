@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Product = require("./src/models/product.model"); // Asegúrate que la ruta sea correcta
+const Product = require("./src/models/product.model");
 const fs = require("fs");
 const path = require("path");
 
