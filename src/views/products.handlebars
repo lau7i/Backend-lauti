@@ -12,4 +12,14 @@
   {{/each}}
 </div>
 
+<div>
+  {{#if hasPrevPage}}
+    <a href="{{prevLink}}">Página Anterior</a>
+  {{/if}}
+  <span>Página {{page}} de {{totalPages}}</span>
+  {{#if hasNextPage}}
+    <a href="{{nextLink}}">Página Siguiente</a>
+  {{/if}}
+</div>
+
 <script src="/js/products.js"></script>

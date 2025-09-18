@@ -6,7 +6,7 @@ const productManager = new ProductManager();
 
 router.get("/", async (req, res) => {
   try {
-    const { limit, page, sort, query } = req.query;
+    const { limit = 10, page = 1, sort, query } = req.query;
     const productsData = await productManager.getProducts({
       limit,
       page,
@@ -24,12 +24,12 @@ router.get("/", async (req, res) => {
       hasPrevPage: productsData.hasPrevPage,
       hasNextPage: productsData.hasNextPage,
       prevLink: productsData.hasPrevPage
-        ? `/api/products?page=${productsData.prevPage}&limit=${limit || 10}${
+        ? `/api/products?page=${productsData.prevPage}&limit=${limit}${
             sort ? `&sort=${sort}` : ""
           }${query ? `&query=${query}` : ""}`
         : null,
       nextLink: productsData.hasNextPage
-        ? `/api/products?page=${productsData.nextPage}&limit=${limit || 10}${
+        ? `/api/products?page=${productsData.nextPage}&limit=${limit}${
             sort ? `&sort=${sort}` : ""
           }${query ? `&query=${query}` : ""}`
         : null,
@@ -37,6 +37,7 @@ router.get("/", async (req, res) => {
 
     res.json(response);
   } catch (error) {
+    console.error(error);
     res
       .status(500)
       .json({ status: "error", error: "Error interno del servidor" });
@@ -44,12 +45,22 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
+  const { title, description, code, price, stock, category } = req.body;
+  if (!title || !description || !code || !price || !stock || !category) {
+    return res.status(400).json({ error: "Todos los campos son obligatorios" });
+  }
+
   try {
     const newProduct = await productManager.addProduct(req.body);
-
-    req.io.emit("productsUpdated", await productManager.getProducts({}));
+    const products = await productManager.getProducts({});
+    req.io.emit("productsUpdated", products.docs);
     res.status(201).json(newProduct);
   } catch (error) {
+    if (error.code === 11000) {
+      return res
+        .status(400)
+        .json({ error: `El código '${error.keyValue.code}' ya existe.` });
+    }
     res.status(500).json({ error: "Error al agregar el producto" });
   }
 });

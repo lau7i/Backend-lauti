@@ -1,4 +1,6 @@
 const Cart = require("../models/cart.model");
+const ProductManager = require("./ProductManager");
+const productManager = new ProductManager();
 
 class CartManager {
   async getCartById(id) {
@@ -10,8 +12,15 @@ class CartManager {
   }
 
   async addProductToCart(cartId, productId) {
+    const product = await productManager.getProductById(productId);
+    if (!product) {
+      throw new Error("Producto no encontrado");
+    }
+
     const cart = await Cart.findById(cartId);
-    if (!cart) throw new Error("Carrito no encontrado");
+    if (!cart) {
+      throw new Error("Carrito no encontrado");
+    }
 
     const productIndex = cart.products.findIndex((p) =>
       p.product.equals(productId)
@@ -43,6 +52,9 @@ class CartManager {
   }
 
   async updateProductQuantity(cartId, productId, quantity) {
+    if (typeof quantity !== "number" || quantity <= 0) {
+      throw new Error("La cantidad debe ser un número positivo");
+    }
     return await Cart.findOneAndUpdate(
       { _id: cartId, "products.product": productId },
       { $set: { "products.$.quantity": quantity } },
